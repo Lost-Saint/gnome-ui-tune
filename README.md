@@ -78,6 +78,20 @@ gnome-ui-tune@itstime.tech.shell-extension.zip
 
 Generated files such as `docs/`, compiled schemas, `.mo` files, and zip files are ignored by git.
 
+## Install
+
+Install the built zip:
+
+```sh
+gnome-extensions install --force gnome-ui-tune@itstime.tech.shell-extension.zip
+```
+
+Enable the extension by UUID:
+
+```sh
+gnome-extensions enable gnome-ui-tune@itstime.tech
+```
+
 ## Screenshot
 
 ![image](https://user-images.githubusercontent.com/3088476/114587629-daae3280-9c53-11eb-9c70-3fb40fbb3d42.png)
