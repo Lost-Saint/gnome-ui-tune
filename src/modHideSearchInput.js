@@ -6,7 +6,7 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js'
 export default class extends Mod {
     show_search() {
         // Main.overview.searchEntry.show();
-        Main.overview.searchEntry.get_parent().ease({
+        Main.overview.searchEntry?.get_parent()?.ease({
             height  : Main.overview.searchEntry.height,
             mode    : Clutter.AnimationMode.EASE,
             duration: 10,
@@ -15,7 +15,7 @@ export default class extends Mod {
 
     hide_search() {
         // Main.overview.searchEntry.hide();
-        Main.overview.searchEntry.get_parent().ease({
+        Main.overview.searchEntry?.get_parent()?.ease({
             height  : 0,
             mode    : Clutter.AnimationMode.EASE,
             duration: 100,
@@ -23,13 +23,14 @@ export default class extends Mod {
     }
 
     enable() {
-        const onceConnectId = Main.overview.connect('showing', () => {
+        this.onceConnectId = Main.overview.connect('showing', () => {
             this.hide_search()
-            Main.overview.disconnect(onceConnectId)
+            Main.overview.disconnect(this.onceConnectId)
+            this.onceConnectId = 0
         })
 
-        this.connectedId = Main.overview._overview.controls._searchController.connect('notify::search-active', () => {
-            if (Main.overview._overview.controls._searchController.searchActive) {
+        this.connectedId = Main.overview.searchController.connect('notify::search-active', () => {
+            if (Main.overview.searchController.searchActive) {
                 this.show_search()
             } else {
                 this.hide_search()
@@ -38,8 +39,14 @@ export default class extends Mod {
     }
 
     disable() {
+        if (this.onceConnectId) {
+            Main.overview.disconnect(this.onceConnectId)
+            this.onceConnectId = 0
+        }
+
         if (this.connectedId) {
-            Main.overview._overview.controls._searchController.disconnect(this.connectedId)
+            Main.overview.searchController.disconnect(this.connectedId)
+            this.connectedId = 0
         }
 
         this.show_search()

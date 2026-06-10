@@ -40,14 +40,16 @@ export default class extends Extension {
         this.settings = this.getSettings()
 
         Object.keys(this.available_mods).forEach(name => {
-            this.settings.connect('changed::' + name, () => {
+            this.settings.connectObject('changed::' + name, () => {
                 this._refresh_mod(name)
-            });
+            }, this);
             this._refresh_mod(name)
         })
     }
 
     disable() {
+        this.settings?.disconnectObject(this)
+
         for (const key in this.mods) {
             if (!this.mods.hasOwnProperty(key)) continue;
             this.mods[key].disable()
