@@ -13,7 +13,7 @@ dist: schemas gettext ## Prepare zip file for extensions.gnome.org
 	gnome-extensions pack --force --podir=locale --extra-source src --extra-source LICENSE .
 
 docs: ## Generate JSDoc documentation
-	npm run docs
+	pnpm run docs
 
 schemas: ## Compile glib schemas
 	glib-compile-schemas ./schemas/

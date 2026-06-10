@@ -38,21 +38,21 @@ Build dependencies:
 - `glib-compile-schemas`
 - `msgfmt`
 - `jq`
-- Node.js and npm, for JSDoc only
+- Node.js and pnpm, for JSDoc only
 
 ## Documentation
 
 Install the local Node.js tooling once:
 
 ```sh
-npm install
+pnpm install
 ```
 
 Generate API documentation with either command:
 
 ```sh
 make docs
-npm run docs
+pnpm run docs
 ```
 
 The generated JSDoc site is written to `docs/`. Open it locally with:
