@@ -1,7 +1,24 @@
 import * as modsList from './src/modsList.js'
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 
-export default class extends Extension {
+/**
+ * GNOME Shell extension entry point.
+ *
+ * Loads all available overview UI mods, watches their GSettings keys, and
+ * enables or disables each mod when its setting changes.
+ *
+ * @extends Extension
+ */
+export default class GnomeUiTuneExtension extends Extension {
+    /**
+     * Refresh a single mod according to its current GSettings value.
+     *
+     * Boolean settings enable or disable a mod directly. Enum settings are
+     * treated as enabled and passed to the mod constructor.
+     *
+     * @param {string} name GSettings key and mod identifier.
+     * @returns {void}
+     */
     _refresh_mod(name) {
         if (!this.available_mods[name]) return
 
@@ -33,6 +50,11 @@ export default class extends Extension {
         }
     }
 
+    /**
+     * Initialize settings, connect change handlers, and enable active mods.
+     *
+     * @returns {void}
+     */
     enable() {
         this.available_mods = modsList.get()
         this.mods = {}
@@ -47,6 +69,11 @@ export default class extends Extension {
         })
     }
 
+    /**
+     * Disconnect settings handlers and disable all active mods.
+     *
+     * @returns {void}
+     */
     disable() {
         this.settings?.disconnectObject(this)
 

@@ -7,7 +7,21 @@ import Adw from 'gi://Adw';
 import {ExtensionPreferences, gettext as _} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 import * as modsListNames from './src/modsListNames.js'
 
-export default class extends ExtensionPreferences {
+/**
+ * Preferences entry point for the extension.
+ *
+ * Builds one preferences row per registered mod and binds each row to its
+ * corresponding GSettings key.
+ *
+ * @extends ExtensionPreferences
+ */
+export default class GnomeUiTunePreferences extends ExtensionPreferences {
+    /**
+     * Populate the GNOME Extensions preferences window.
+     *
+     * @param {Adw.PreferencesWindow} window Preferences window provided by GNOME Shell.
+     * @returns {void}
+     */
     fillPreferencesWindow(window) {
         const settings = this.getSettings()
 

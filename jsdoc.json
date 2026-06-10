@@ -1,0 +1,26 @@
+{
+  "source": {
+    "include": [
+      "extension.js",
+      "prefs.js",
+      "src"
+    ],
+    "exclude": [
+      "src/modFirefoxPipInOverview_titles.js"
+    ],
+    "includePattern": ".+\\.js$",
+    "excludePattern": "(^|\\/|\\\\)_"
+  },
+  "sourceType": "module",
+  "opts": {
+    "destination": "docs/",
+    "encoding": "utf8",
+    "private": false,
+    "recurse": true,
+    "template": "templates/default"
+  },
+  "templates": {
+    "cleverLinks": true,
+    "monospaceLinks": true
+  }
+}

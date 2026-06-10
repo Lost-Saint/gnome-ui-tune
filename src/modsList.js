@@ -5,6 +5,11 @@ import * as modAlwaysShowThumbnails from './modAlwaysShowThumbnails.js'
 import * as modFirefoxPipInOverview from './modFirefoxPipInOverview.js'
 
 // This func can not be used from prefs.js due to mods being actually loaded when they're imported
+/**
+ * Return the mod constructors keyed by their GSettings names.
+ *
+ * @returns {Object<string, Function>} Available mod constructors.
+ */
 export function get() {
     return {
         'increase-thumbnails-size': modScaleThumbnails.default,

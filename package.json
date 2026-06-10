@@ -1,0 +1,13 @@
+{
+  "name": "gnome-ui-tune",
+  "version": "1.0.0",
+  "description": "GNOME Shell extension that tunes the overview UI to make it more usable.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "docs": "jsdoc -c jsdoc.json"
+  },
+  "devDependencies": {
+    "jsdoc": "^4.0.4"
+  }
+}

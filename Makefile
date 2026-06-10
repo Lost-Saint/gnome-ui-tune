@@ -1,4 +1,4 @@
-.PHONY: gettext dist help schemas update-ff-translations
+.PHONY: gettext dist docs help schemas update-ff-translations
 .DEFAULT_GOAL=help
 uuid:=$(shell jq -r .uuid metadata.json)
 
@@ -11,6 +11,9 @@ gettext: ## Generate .mo translation files
 
 dist: schemas gettext ## Prepare zip file for extensions.gnome.org
 	gnome-extensions pack --force --podir=locale --extra-source src --extra-source LICENSE .
+
+docs: ## Generate JSDoc documentation
+	npm run docs
 
 schemas: ## Compile glib schemas
 	glib-compile-schemas ./schemas/

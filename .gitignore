@@ -1,6 +1,7 @@
 *.iml
 .idea
+node_modules/
+docs/
 schemas/gschemas.compiled
 *.mo
 *.zip
-

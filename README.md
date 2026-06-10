@@ -13,6 +13,17 @@ Simple [gnome-shell](https://wiki.gnome.org/Projects/GnomeShell) (v4x) extension
 
 All modifications can be disabled in the extension's settings.
 
+## Documentation
+
+Install the local Node.js tooling and generate API documentation with:
+
+```sh
+npm install
+npm run docs
+```
+
+The generated JSDoc site is written to `docs/`.
+
 ## Screenshot
 
 ![image](https://user-images.githubusercontent.com/3088476/114587629-daae3280-9c53-11eb-9c70-3fb40fbb3d42.png)
