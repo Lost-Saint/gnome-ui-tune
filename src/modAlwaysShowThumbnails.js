@@ -3,7 +3,22 @@ import {InjectionManager} from 'resource:///org/gnome/shell/extensions/extension
 
 import {ThumbnailsBox} from 'resource:///org/gnome/shell/ui/workspaceThumbnail.js'
 
-export default class extends Mod {
+/**
+ * @module src/modAlwaysShowThumbnails
+ */
+
+/**
+ * Forces the workspace thumbnails strip to remain visible.
+ *
+ * @extends Mod
+ */
+export default class AlwaysShowThumbnailsMod extends Mod {
+    /**
+     * Override GNOME Shell's thumbnail visibility check.
+     *
+     * @override
+     * @returns {void}
+     */
     enable() {
         this.injectionManager = new InjectionManager()
         this.injectionManager.overrideMethod(ThumbnailsBox.prototype, '_updateShouldShow', () => {
@@ -16,6 +31,12 @@ export default class extends Mod {
         })
     }
 
+    /**
+     * Remove method overrides installed by {@link AlwaysShowThumbnailsMod#enable}.
+     *
+     * @override
+     * @returns {void}
+     */
     disable() {
         this.injectionManager?.clear()
         this.injectionManager = null

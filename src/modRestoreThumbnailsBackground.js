@@ -5,6 +5,28 @@ import { BackgroundManager } from "resource:///org/gnome/shell/ui/background.js"
 import { InjectionManager } from "resource:///org/gnome/shell/extensions/extension.js";
 import * as Main from "resource:///org/gnome/shell/ui/main.js";
 
+/**
+ * @module src/modRestoreThumbnailsBackground
+ */
+
+/**
+ * Workspace thumbnail fields managed by this mod.
+ *
+ * GNOME Shell owns the object. The mod adds these fields while enabled so it
+ * can disconnect signals and destroy the background manager later.
+ *
+ * @typedef {Object} ThumbnailWithBackground
+ * @property {?BackgroundManager} [_bgManager] Background manager attached to the thumbnail.
+ * @property {number} [_bgManagerLoadedId] Signal id for the background loaded handler.
+ * @property {number} [_bgManagerChangedId] Signal id for the background changed handler.
+ */
+
+/**
+ * Remove the background manager and signal handlers from a thumbnail.
+ *
+ * @param {ThumbnailWithBackground} thumbnail Thumbnail patched by this mod.
+ * @returns {void}
+ */
 function cleanupThumbnailBackground(thumbnail) {
   if (!thumbnail?._bgManager) {
     return;
@@ -24,7 +46,18 @@ function cleanupThumbnailBackground(thumbnail) {
   thumbnail._bgManager = null;
 }
 
-export default class extends Mod {
+/**
+ * Restores wallpaper backgrounds inside workspace thumbnails.
+ *
+ * @extends Mod
+ */
+export default class RestoreThumbnailsBackgroundMod extends Mod {
+  /**
+   * Attach background managers to newly created workspace thumbnails.
+   *
+   * @override
+   * @returns {void}
+   */
   enable() {
     this._thumbnails = new Set();
     this._injectionManager = new InjectionManager();
@@ -67,6 +100,12 @@ export default class extends Mod {
     });
   }
 
+  /**
+   * Clean up background managers and remove method overrides.
+   *
+   * @override
+   * @returns {void}
+   */
   disable() {
     this._cleanupCurrentThumbnails();
 
@@ -75,6 +114,12 @@ export default class extends Mod {
     this._thumbnails = null;
   }
 
+  /**
+   * Remove backgrounds from all thumbnails that currently exist.
+   *
+   * @private
+   * @returns {void}
+   */
   _cleanupCurrentThumbnails() {
     for (const thumbnail of this._thumbnails ?? []) {
       cleanupThumbnailBackground(thumbnail);
@@ -88,6 +133,13 @@ export default class extends Mod {
     }
   }
 
+  /**
+   * Remove backgrounds from every thumbnail in a thumbnails box.
+   *
+   * @private
+   * @param {?Object} thumbnailsBox GNOME Shell thumbnails box.
+   * @returns {void}
+   */
   _cleanupThumbnailsBox(thumbnailsBox) {
     for (const thumbnail of thumbnailsBox?._thumbnails ?? []) {
       cleanupThumbnailBackground(thumbnail);

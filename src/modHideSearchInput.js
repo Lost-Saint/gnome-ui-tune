@@ -3,7 +3,21 @@ import {Mod} from './mod.js'
 import Clutter from 'gi://Clutter'
 import * as Main from 'resource:///org/gnome/shell/ui/main.js'
 
-export default class extends Mod {
+/**
+ * @module src/modHideSearchInput
+ */
+
+/**
+ * Hides the overview search entry until search becomes active.
+ *
+ * @extends Mod
+ */
+export default class HideSearchInputMod extends Mod {
+    /**
+     * Expand the search entry container.
+     *
+     * @returns {void}
+     */
     show_search() {
         // Main.overview.searchEntry.show();
         Main.overview.searchEntry?.get_parent()?.ease({
@@ -13,6 +27,11 @@ export default class extends Mod {
         })
     }
 
+    /**
+     * Collapse the search entry container.
+     *
+     * @returns {void}
+     */
     hide_search() {
         // Main.overview.searchEntry.hide();
         Main.overview.searchEntry?.get_parent()?.ease({
@@ -22,6 +41,12 @@ export default class extends Mod {
         })
     }
 
+    /**
+     * Connect overview signals and hide the search entry when appropriate.
+     *
+     * @override
+     * @returns {void}
+     */
     enable() {
         this.onceConnectId = Main.overview.connect('showing', () => {
             this.hide_search()
@@ -38,6 +63,12 @@ export default class extends Mod {
         })
     }
 
+    /**
+     * Disconnect overview signals and restore the search entry.
+     *
+     * @override
+     * @returns {void}
+     */
     disable() {
         if (this.onceConnectId) {
             Main.overview.disconnect(this.onceConnectId)

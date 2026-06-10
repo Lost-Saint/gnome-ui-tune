@@ -4,7 +4,22 @@ import {InjectionManager} from 'resource:///org/gnome/shell/extensions/extension
 
 import {Workspace} from  'resource:///org/gnome/shell/ui/workspace.js'
 
-export default class extends Mod {
+/**
+ * @module src/modFirefoxPipInOverview
+ */
+
+/**
+ * Treats Firefox picture-in-picture windows as overview-visible windows.
+ *
+ * @extends Mod
+ */
+export default class FirefoxPipInOverviewMod extends Mod {
+    /**
+     * Override GNOME Shell's overview window filter for Firefox PIP windows.
+     *
+     * @override
+     * @returns {void}
+     */
     enable() {
         this.injectionManager = new InjectionManager()
         this.injectionManager.overrideMethod(Workspace.prototype, '_isOverviewWindow', originalMethod => {
@@ -18,6 +33,12 @@ export default class extends Mod {
         })
     }
 
+    /**
+     * Remove method overrides installed by {@link FirefoxPipInOverviewMod#enable}.
+     *
+     * @override
+     * @returns {void}
+     */
     disable() {
         this.injectionManager?.clear()
         this.injectionManager = null

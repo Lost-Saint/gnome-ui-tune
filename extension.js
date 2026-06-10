@@ -2,6 +2,10 @@ import * as modsList from './src/modsList.js'
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 /**
+ * @module extension
+ */
+
+/**
  * GNOME Shell extension entry point.
  *
  * Loads all available overview UI mods, watches their GSettings keys, and
@@ -56,7 +60,9 @@ export default class GnomeUiTuneExtension extends Extension {
      * @returns {void}
      */
     enable() {
+        /** @type {module:src/modsList.ModRegistry} */
         this.available_mods = modsList.get()
+        /** @type {Object<string, module:src/mod.Mod>} */
         this.mods = {}
 
         this.settings = this.getSettings()

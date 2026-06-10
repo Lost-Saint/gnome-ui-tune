@@ -4,12 +4,32 @@ import {InjectionManager} from 'resource:///org/gnome/shell/extensions/extension
 
 import {SecondaryMonitorDisplay} from 'resource:///org/gnome/shell/ui/workspacesView.js'
 
-export default class extends Mod {
+/**
+ * @module src/modScaleThumbnails
+ */
+
+/**
+ * Scales workspace thumbnails on primary and secondary monitors.
+ *
+ * @extends Mod
+ */
+export default class ScaleThumbnailsMod extends Mod {
+    /**
+     * Create the mod.
+     *
+     * @param {number} scaleFactor Scale percentage from settings.
+     */
     constructor(scaleFactor) {
         super()
         this.scaleFactor = scaleFactor / 100
     }
 
+    /**
+     * Override thumbnail scale values in GNOME Shell.
+     *
+     * @override
+     * @returns {void}
+     */
     enable() {
         let _thumbnailsBox = main.overview._overview._controls._thumbnailsBox;
 
@@ -40,6 +60,12 @@ export default class extends Mod {
         })
     }
 
+    /**
+     * Restore the previous thumbnail scale and remove overrides.
+     *
+     * @override
+     * @returns {void}
+     */
     disable() {
         if (this.bkp_MAX_THUMBNAIL_SCALE) {
             let _thumbnailsBox = main.overview._overview._controls._thumbnailsBox;

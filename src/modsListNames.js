@@ -1,5 +1,9 @@
 
 /**
+ * @module src/modsListNames
+ */
+
+/**
  * Return the ordered list of mod GSettings keys shown in preferences.
  *
  * @returns {string[]} Mod setting names.

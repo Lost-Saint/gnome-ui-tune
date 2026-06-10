@@ -8,6 +8,10 @@ import {ExtensionPreferences, gettext as _} from 'resource:///org/gnome/Shell/Ex
 import * as modsListNames from './src/modsListNames.js'
 
 /**
+ * @module prefs
+ */
+
+/**
  * Preferences entry point for the extension.
  *
  * Builds one preferences row per registered mod and binds each row to its
