@@ -32,18 +32,20 @@ function cleanupThumbnailBackground(thumbnail) {
     return;
   }
 
+  const bgManager = thumbnail._bgManager;
+  thumbnail._bgManager = null;
+
   if (thumbnail._bgManagerLoadedId) {
-    thumbnail._bgManager.disconnect(thumbnail._bgManagerLoadedId);
+    bgManager.disconnect(thumbnail._bgManagerLoadedId);
     thumbnail._bgManagerLoadedId = 0;
   }
 
   if (thumbnail._bgManagerChangedId) {
-    thumbnail._bgManager.disconnect(thumbnail._bgManagerChangedId);
+    bgManager.disconnect(thumbnail._bgManagerChangedId);
     thumbnail._bgManagerChangedId = 0;
   }
 
-  thumbnail._bgManager.destroy();
-  thumbnail._bgManager = null;
+  bgManager.destroy();
 }
 
 /**
@@ -93,9 +95,9 @@ export default class RestoreThumbnailsBackgroundMod extends Mod {
     this._injectionManager.overrideMethod(WorkspaceThumbnail.prototype, "_onDestroy", originalMethod => {
       const mod = this;
       return function () {
-        originalMethod.call(this);
         cleanupThumbnailBackground(this);
         mod._thumbnails.delete(this);
+        originalMethod.call(this);
       };
     });
   }

@@ -49,9 +49,14 @@ export default class HideSearchInputMod extends Mod {
      */
     enable() {
         this.onceConnectId = Main.overview.connect('showing', () => {
-            this.hide_search()
-            Main.overview.disconnect(this.onceConnectId)
+            const connectId = this.onceConnectId
             this.onceConnectId = 0
+
+            if (connectId) {
+                Main.overview.disconnect(connectId)
+            }
+
+            this.hide_search()
         })
 
         this.connectedId = Main.overview.searchController.connect('notify::search-active', () => {
