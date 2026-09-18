@@ -4,11 +4,14 @@
   "description": "GNOME Shell extension that tunes the overview UI to make it more usable.",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@11.5.2",
   "scripts": {
     "docs": "jsdoc -c jsdoc.json"
   },
   "devDependencies": {
-    "jsdoc": "^4.0.4"
+    "jsdoc": "^4.0.4",
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^7"
   }
 }
