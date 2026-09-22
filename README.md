@@ -5,7 +5,7 @@
 Simple [gnome-shell](https://wiki.gnome.org/Projects/GnomeShell) extension that tunes the overview UI to make it more usable.
 
 The project is named Overtue. The extension UUID and settings schema keep their
-existing `gnome-ui-tune` IDs so upgrades preserve installed settings.
+existing `overtue` IDs so upgrades preserve installed settings.
 
 Supported GNOME Shell versions are listed in `metadata.json`.
 
@@ -81,7 +81,7 @@ on it.
 The output is a zip file named after the extension UUID, for example:
 
 ```sh
-gnome-ui-tune@itstime.tech.shell-extension.zip
+overtue@lost-saint.gg.shell-extension.zip
 ```
 
 Generated files such as `dist/`, compiled schemas, `.mo` files, and zip files are ignored by git.
@@ -91,13 +91,13 @@ Generated files such as `dist/`, compiled schemas, `.mo` files, and zip files ar
 Install the built zip:
 
 ```sh
-gnome-extensions install --force gnome-ui-tune@itstime.tech.shell-extension.zip
+gnome-extensions install --force overtue@lost-saint.gg.shell-extension.zip
 ```
 
 Enable the extension by UUID:
 
 ```sh
-gnome-extensions enable gnome-ui-tune@itstime.tech
+gnome-extensions enable overtue@lost-saint.gg
 ```
 
 ## Screenshot

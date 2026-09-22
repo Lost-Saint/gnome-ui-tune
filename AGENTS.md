@@ -1,6 +1,6 @@
 # Overtue
 
-Overtue (`gnome-ui-tune@itstime.tech`) is a minimal GNOME Shell extension that tunes the overview UI to make it more usable. TypeScript sources compile with `tsc` into `dist/`, GSettings stores state, `InjectionManager` and signal connections patch Shell, and Adw builds the preferences UI.
+Overtue (`overtue@lost-saint.gg`) is a minimal GNOME Shell extension that tunes the overview UI to make it more usable. TypeScript sources compile with `tsc` into `dist/`, GSettings stores state, `InjectionManager` and signal connections patch Shell, and Adw builds the preferences UI.
 
 Maintainer: `lost-saint.gg`. Supported Shell versions are listed in `metadata.json` (currently 48–50).
 
@@ -36,7 +36,7 @@ Most contributions here are one mod or one Shell-version fix. Keep the blast rad
 - **we, us, and maintainers** mean lost-saint.gg and the people building this fork.
 - **user** means the person running GNOME Shell with this extension enabled.
 - **mod** means one overview modification in `src/mod*.ts`, extending `src/mod.ts` (`enable()`/`disable()`).
-- **GSettings key** means one setting in `schemas/org.gnome.shell.extensions.gnome-ui-tune.gschema.xml`. It is the shared contract between `extension.ts`, `prefs.ts`, `modsList.ts`, and `modsListNames.ts`.
+- **GSettings key** means one setting in `schemas/org.gnome.shell.extensions.overtue.gschema.xml`. It is the shared contract between `extension.ts`, `prefs.ts`, `modsList.ts`, and `modsListNames.ts`.
 - **prefs** means the Extensions-app UI built in `prefs.ts` (Adw `PreferencesPage`/`SwitchRow`/toggle buttons).
 - **Shell** means the running GNOME Shell the code patches via `resource:///` imports. Never bundled, never vendored.
 
@@ -63,11 +63,11 @@ The most common defect here is wiring three of the four touchpoints and missing 
 - `make build` / `bun run build` compiles `extension.ts`, `prefs.ts`, `src/*.ts` with `tsc` into `dist/`, preserving `gi://`, `resource:///`, and relative `.js` specifiers for GJS. Types come from `@girs/gjs` + `@girs/gnome-shell` (see `ambient.d.ts`); Shell privates without `@girs` coverage live in `src/shellInternals.d.ts` / `src/workspaceThumbnail.d.ts`.
 - `make schemas` compiles GSettings: `glib-compile-schemas ./schemas/`. Run after schema edits.
 - `make gettext` builds `.mo` files from `locale/*.po` via `msgfmt`. Run after translation edits.
-- `make dist` stages the compiled output plus `metadata.json`, `LICENSE`, schemas, and `locale/` into `dist/` and packs it: `gnome-extensions pack --force --podir=locale --extra-source src --extra-source LICENSE dist --out-dir .`. Output is `gnome-ui-tune@itstime.tech.shell-extension.zip` (gitignored). Never hand-edit `dist/`; it is rebuilt from sources.
+- `make dist` stages the compiled output plus `metadata.json`, `LICENSE`, schemas, and `locale/` into `dist/` and packs it: `gnome-extensions pack --force --podir=locale --extra-source src --extra-source LICENSE dist --out-dir .`. Output is `overtue@lost-saint.gg.shell-extension.zip` (gitignored). Never hand-edit `dist/`; it is rebuilt from sources.
 - Install / enable the built zip:
   ```sh
-  gnome-extensions install --force gnome-ui-tune@itstime.tech.shell-extension.zip
-  gnome-extensions enable gnome-ui-tune@itstime.tech
+  gnome-extensions install --force overtue@lost-saint.gg.shell-extension.zip
+  gnome-extensions enable overtue@lost-saint.gg
   ```
 - After update, Shell restart is required: X11 `Alt+F2` → `r`; Wayland logout → login.
 - Build deps: `gnome-extensions`, `glib-compile-schemas`, `msgfmt`, `jq`, and Bun for TypeScript dependencies.
@@ -137,7 +137,7 @@ Each mod extends `src/mod.ts:Mod` with `enable()`/`disable()`. Implementations p
 - `src/modRestoreThumbnailsBackground.ts` — per-thumbnail `BackgroundManager` via `_init`/`_onDestroy` overrides + orphan cleanup across thumbnail boxes.
 - `src/modAlwaysShowThumbnails.ts` — forces `ThumbnailsBox._updateShouldShow`.
 - `src/modFirefoxPipInOverview.ts` + `src/modFirefoxPipInOverview_titles.ts` (generated) — treats Firefox PiP windows as overview windows.
-- `schemas/org.gnome.shell.extensions.gnome-ui-tune.gschema.xml` — 5 keys, defaults (`hide-search`, `restore-thumbnails-background`, `always-show-thumbnails`, `overview-firefox-pip` default `true`; `increase-thumbnails-size` default `'200%'`).
+- `schemas/org.gnome.shell.extensions.overtue.gschema.xml` — 5 keys, defaults (`hide-search`, `restore-thumbnails-background`, `always-show-thumbnails`, `overview-firefox-pip` default `true`; `increase-thumbnails-size` default `'200%'`).
 - `metadata.json` — UUID, display name, `settings-schema`, supported Shell versions.
 - `locale/*.po` + `Makefile:gettext` — translations; `scripts/update-ff-translations.sh` — PiP title regeneration.
 - `Makefile`, `package.json`, `tsconfig.json` — build tooling. `.github/workflows/release.yml` — tag-triggered zip release.
