@@ -1,23 +1,28 @@
-import { Mod } from './mod.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { InjectionManager } from 'resource:///org/gnome/shell/extensions/extension.js';
 import { SecondaryMonitorDisplay } from 'resource:///org/gnome/shell/ui/workspacesView.js';
 import type { ThumbnailsBox } from 'resource:///org/gnome/shell/ui/workspaceThumbnail.js';
+import { Mod } from './mod.js';
+import type { ThumbnailScaleSetting } from './modsListNames.js';
 
-/** Scales workspace thumbnails on primary and secondary monitors. */
+type ScaleState =
+    | {readonly kind: 'disabled'}
+    | {
+        readonly kind: 'enabled';
+        readonly injectionManager: InjectionManager;
+        readonly previousMaxThumbnailScale: number;
+        readonly thumbnailsBox: ThumbnailsBox;
+    };
+
 export default class ScaleThumbnailsMod extends Mod {
     private readonly scaleFactor: number;
-    private backupMaxThumbnailScale?: number;
-    private injectionManager?: InjectionManager;
+    private state: ScaleState = {kind: 'disabled'};
 
-    /** @param scaleFactor GSettings enum value (5 = 100% … 25 = 500%); defaults to 10 (200%). */
-    constructor(scaleFactor?: number | boolean) {
+    constructor(settingValue: ThumbnailScaleSetting) {
         super();
-        const value = typeof scaleFactor === 'number' ? scaleFactor : 10;
-        this.scaleFactor = value / 100;
+        this.scaleFactor = settingValue / 100;
     }
 
-    /** Override thumbnail scale values in GNOME Shell. */
     override enable(): void {
         const thumbnailsBox: ThumbnailsBox =
             Main.overview._overview._controls._thumbnailsBox;
@@ -27,12 +32,11 @@ export default class ScaleThumbnailsMod extends Mod {
             return;
         }
 
-        this.backupMaxThumbnailScale = thumbnailsBox._maxThumbnailScale;
+        const previousMaxThumbnailScale = thumbnailsBox._maxThumbnailScale;
         thumbnailsBox._maxThumbnailScale = this.scaleFactor;
 
         const scaleFactor = this.scaleFactor;
         const injectionManager = new InjectionManager();
-        this.injectionManager = injectionManager;
         injectionManager.overrideMethod(
             SecondaryMonitorDisplay.prototype,
             '_getThumbnailsHeight',
@@ -43,7 +47,7 @@ export default class ScaleThumbnailsMod extends Mod {
                     this._thumbnails._maxThumbnailScale = scaleFactor;
 
                     const [width, height] = box.get_size();
-                    const { expandFraction } = this._thumbnails;
+                    const {expandFraction} = this._thumbnails;
                     const [thumbnailsHeight] =
                         this._thumbnails.get_preferred_height(width);
                     return Math.min(
@@ -53,18 +57,22 @@ export default class ScaleThumbnailsMod extends Mod {
                 };
             },
         );
+
+        this.state = {
+            kind: 'enabled',
+            injectionManager,
+            previousMaxThumbnailScale,
+            thumbnailsBox,
+        };
     }
 
-    /** Restore the previous thumbnail scale and remove overrides. */
     override disable(): void {
-        if (this.backupMaxThumbnailScale !== undefined) {
-            const thumbnailsBox: ThumbnailsBox =
-                Main.overview._overview._controls._thumbnailsBox;
-            thumbnailsBox._maxThumbnailScale = this.backupMaxThumbnailScale;
-            this.backupMaxThumbnailScale = undefined;
-        }
+        const state = this.state;
+        if (state.kind === 'disabled') return;
+        this.state = {kind: 'disabled'};
 
-        this.injectionManager?.clear();
-        this.injectionManager = undefined;
+        state.thumbnailsBox._maxThumbnailScale =
+            state.previousMaxThumbnailScale;
+        state.injectionManager.clear();
     }
 }

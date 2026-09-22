@@ -1,13 +1,11 @@
-import { Mod } from './mod.js';
 import Clutter from 'gi://Clutter';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import { Mod } from './mod.js';
 
-/** Hides the overview search entry until search becomes active. */
 export default class HideSearchInputMod extends Mod {
     private overviewShowingId = 0;
     private searchActiveId = 0;
 
-    /** Expand the search entry container. */
     private showSearch(): void {
         Main.overview.searchEntry?.get_parent()?.ease({
             height: Main.overview.searchEntry.height,
@@ -16,7 +14,6 @@ export default class HideSearchInputMod extends Mod {
         });
     }
 
-    /** Collapse the search entry container. */
     private hideSearch(): void {
         Main.overview.searchEntry?.get_parent()?.ease({
             height: 0,
@@ -25,7 +22,6 @@ export default class HideSearchInputMod extends Mod {
         });
     }
 
-    /** Connect overview signals and hide the search entry when appropriate. */
     override enable(): void {
         this.overviewShowingId = Main.overview.connect('showing', () => {
             const connectId = this.overviewShowingId;
@@ -50,7 +46,6 @@ export default class HideSearchInputMod extends Mod {
         );
     }
 
-    /** Disconnect overview signals and restore the search entry. */
     override disable(): void {
         if (this.overviewShowingId) {
             Main.overview.disconnect(this.overviewShowingId);

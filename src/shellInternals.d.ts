@@ -1,10 +1,5 @@
-/**
- * Augmentations for `@girs` modules this extension needs more from.
- *
- * NOTE: this file is intentionally a module (top-level imports), so the
- * `declare module` blocks below *augment* the existing modules. Declaring
- * them from a script file would shadow the original exports instead.
- */
+// This file has top-level imports so its declarations augment @girs modules.
+// Without an import, the declarations would replace the original exports.
 import type Clutter from 'gi://Clutter';
 import type Meta from 'gi://Meta';
 

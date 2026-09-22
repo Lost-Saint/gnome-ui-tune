@@ -1,14 +1,12 @@
-import { Mod } from './mod.js';
-import { titles } from './modFirefoxPipInOverview_titles.js';
+import type Meta from 'gi://Meta';
 import { InjectionManager } from 'resource:///org/gnome/shell/extensions/extension.js';
 import { Workspace } from 'resource:///org/gnome/shell/ui/workspace.js';
-import type Meta from 'gi://Meta';
+import { Mod } from './mod.js';
+import { titles } from './modFirefoxPipInOverview_titles.js';
 
-/** Treats Firefox picture-in-picture windows as overview-visible windows. */
 export default class FirefoxPipInOverviewMod extends Mod {
-    private injectionManager?: InjectionManager;
+    private injectionManager: InjectionManager | null = null;
 
-    /** Override GNOME Shell's overview window filter for Firefox PIP windows. */
     override enable(): void {
         const injectionManager = new InjectionManager();
         this.injectionManager = injectionManager;
@@ -31,9 +29,8 @@ export default class FirefoxPipInOverviewMod extends Mod {
         );
     }
 
-    /** Remove method overrides installed by {@link FirefoxPipInOverviewMod.enable}. */
     override disable(): void {
         this.injectionManager?.clear();
-        this.injectionManager = undefined;
+        this.injectionManager = null;
     }
 }

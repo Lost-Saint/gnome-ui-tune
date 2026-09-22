@@ -9,15 +9,21 @@
     "rootDir": ".",
     "sourceMap": false,
     "declaration": false,
+    "noEmitOnError": true,
+    "verbatimModuleSyntax": true,
 
     // Best practices
     "strict": true,
     "skipLibCheck": true,
+    "exactOptionalPropertyTypes": true,
+    "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noPropertyAccessFromIndexSignature": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
-
-    "types": ["bun"]
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
   },
   "include": ["ambient.d.ts", "extension.ts", "prefs.ts", "src/**/*.ts"]
 }

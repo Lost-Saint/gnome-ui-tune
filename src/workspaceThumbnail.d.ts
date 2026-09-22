@@ -1,15 +1,6 @@
-/**
- * Minimal typings for `workspaceThumbnail.js`, which `@girs/gnome-shell`
- * does not cover at all.
- *
- * Mirrors `js/ui/workspaceThumbnail.js` for Shell 48-50 and covers only
- * what the mods touch. Extend narrowly, and drop this file once `@girs`
- * provides the module.
- *
- * NOTE: this file is intentionally a script (no top-level imports), so the
- * `declare module` block below registers a new ambient module. See
- * `shellInternals.d.ts` for augmentations of existing modules.
- */
+// @girs does not declare workspaceThumbnail.js. These are the parts used by
+// this extension in Shell 48-50. This file has no top-level imports so it
+// registers a new ambient module instead of augmenting a missing module.
 type ClutterActor = import('gi://Clutter').default.Actor;
 type MetaWorkspace = import('gi://Meta').default.Workspace;
 type ShellBackgroundManager = import(
@@ -19,7 +10,7 @@ type ShellBackgroundManager = import(
 declare module 'resource:///org/gnome/shell/ui/workspaceThumbnail.js' {
     interface WorkspaceThumbnail {
         _contents: ClutterActor;
-        /** Attached by modRestoreThumbnailsBackground; absent when the mod is off. */
+        // Attached by modRestoreThumbnailsBackground while the mod is enabled.
         _bgManager?: ShellBackgroundManager | null;
         _bgManagerLoadedId?: number;
         _bgManagerChangedId?: number;
@@ -37,7 +28,7 @@ declare module 'resource:///org/gnome/shell/ui/workspaceThumbnail.js' {
         _shouldShow: boolean;
         _thumbnails: WorkspaceThumbnail[];
         _updateShouldShow(): void;
-        /** GObject notify; untyped in `@girs`, present at runtime. */
+        // GObject method omitted by the upstream module typings.
         notify(property: string): void;
     }
     interface ThumbnailsBoxConstructor {

@@ -1,43 +1,25 @@
-import Gio from 'gi://Gio';
-import GLib from 'gi://GLib';
-import Gtk from 'gi://Gtk';
 import Adw from 'gi://Adw';
+import Gio from 'gi://Gio';
+import Gtk from 'gi://Gtk';
 import {
     ExtensionPreferences,
     gettext as _,
 } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
-import * as modsListNames from './src/modsListNames.js';
+import { getSettings as getModSettings } from './src/modsListNames.js';
 
-/**
- * Read the nick list of an enum GSettings key.
- *
- * The `(sv)` tuple shape comes from our own schema (validated by
- * `glib-compile-schemas` at build time), so only the inner string array is
- * validated here.
- */
 function getEnumNicks(settings: Gio.Settings, key: string): string[] {
-    const range = settings.get_range(key).deep_unpack() as [
-        string,
-        GLib.Variant,
-    ];
-    const nicks: unknown = range[1].deep_unpack();
-    if (
-        !Array.isArray(nicks) ||
-        !nicks.every((nick): nick is string => typeof nick === 'string')
-    ) {
+    const range = settings.settings_schema.get_key(key).get_range();
+    if (range.get_type_string() !== '(sv)' || range.n_children() !== 2) {
         return [];
     }
-    return nicks;
+
+    const values = range.get_child_value(1).get_variant();
+    if (values.get_type_string() !== 'as') return [];
+
+    return values.get_strv();
 }
 
-/**
- * Preferences entry point for the extension.
- *
- * Builds one preferences row per registered mod and binds each row to its
- * corresponding GSettings key.
- */
 export default class GnomeUiTunePreferences extends ExtensionPreferences {
-    /** Populate the GNOME Extensions preferences window. */
     override fillPreferencesWindow(
         window: Adw.PreferencesWindow,
     ): Promise<void> {
@@ -53,43 +35,53 @@ export default class GnomeUiTunePreferences extends ExtensionPreferences {
         });
         page.add(group);
 
-        for (const key of modsListNames.getNames()) {
-            if (settings.get_value(key).get_type_string() === 's') {
-                const row = new Adw.ActionRow({
-                    title: _(key),
-                });
-                const toggle = new Gtk.Box({
-                    halign: Gtk.Align.END,
-                    css_classes: ['linked'],
-                });
-                const valueString = settings.get_string(key);
+        for (const modSetting of getModSettings()) {
+            switch (modSetting.kind) {
+                case 'enum': {
+                    const {name} = modSetting;
+                    const row = new Adw.ActionRow({title: _(name)});
+                    const toggle = new Gtk.Box({
+                        halign: Gtk.Align.END,
+                        css_classes: ['linked'],
+                    });
+                    const valueString = settings.get_string(name);
 
-                let groupButton: Gtk.ToggleButton | undefined;
-                for (const nick of getEnumNicks(settings, key)) {
-                    const button = new Gtk.ToggleButton({
-                        active: valueString === nick,
-                        label: nick,
-                        group: groupButton,
-                    });
-                    groupButton = button;
-                    toggle.append(button);
-                    button.connect('toggled', toggled => {
-                        if (toggled.active) settings.set_string(key, nick);
-                    });
+                    let groupButton: Gtk.ToggleButton | undefined;
+                    for (const nick of getEnumNicks(settings, name)) {
+                        const button = new Gtk.ToggleButton({
+                            active: valueString === nick,
+                            label: nick,
+                        });
+                        button.set_group(groupButton ?? null);
+                        groupButton = button;
+                        toggle.append(button);
+                        button.connect('toggled', toggled => {
+                            if (toggled.active) {
+                                settings.set_string(name, nick);
+                            }
+                        });
+                    }
+                    row.add_suffix(toggle);
+                    group.add(row);
+                    break;
                 }
-                row.add_suffix(toggle);
-                group.add(row);
-            } else {
-                const row = new Adw.SwitchRow({
-                    title: _(key),
-                });
-                settings.bind(
-                    key,
-                    row,
-                    'active',
-                    Gio.SettingsBindFlags.DEFAULT,
-                );
-                group.add(row);
+                case 'boolean': {
+                    const row = new Adw.SwitchRow({
+                        title: _(modSetting.name),
+                    });
+                    settings.bind(
+                        modSetting.name,
+                        row,
+                        'active',
+                        Gio.SettingsBindFlags.DEFAULT,
+                    );
+                    group.add(row);
+                    break;
+                }
+                default: {
+                    const exhaustive: never = modSetting;
+                    return exhaustive;
+                }
             }
         }
 

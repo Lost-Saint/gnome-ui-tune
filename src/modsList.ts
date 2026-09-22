@@ -1,24 +1,26 @@
 import type { Mod } from './mod.js';
+import type {
+    BooleanModName,
+    EnumModSetting,
+} from './modsListNames.js';
 import ScaleThumbnailsMod from './modScaleThumbnails.js';
 import HideSearchInputMod from './modHideSearchInput.js';
 import RestoreThumbnailsBackgroundMod from './modRestoreThumbnailsBackground.js';
 import AlwaysShowThumbnailsMod from './modAlwaysShowThumbnails.js';
 import FirefoxPipInOverviewMod from './modFirefoxPipInOverview.js';
 
-/**
- * Constructor for a mod implementation.
- *
- * The extension always passes its setting value: the enum number for
- * `increase-thumbnails-size`, `false` for boolean keys. Boolean mods ignore
- * the argument.
- */
-export type ModConstructor = new (settings?: number | boolean) => Mod;
+type BooleanModConstructor = new () => Mod;
+type EnumModRegistry = {
+    [Setting in EnumModSetting as Setting['name']]: new (
+        settingValue: ReturnType<Setting['parse']>,
+    ) => Mod;
+};
 
-/** Mods keyed by their matching GSettings names. */
-export type ModRegistry = Record<string, ModConstructor>;
+export type ModRegistry =
+    Record<BooleanModName, BooleanModConstructor> & EnumModRegistry;
 
-// This func can not be used from prefs.js due to mods being actually loaded when they're imported
-/** Return the mod constructors keyed by their GSettings names. */
+// Preferences import only modsListNames.ts so opening the preferences process
+// does not load Shell-only mod modules.
 export function get(): ModRegistry {
     return {
         'increase-thumbnails-size': ScaleThumbnailsMod,

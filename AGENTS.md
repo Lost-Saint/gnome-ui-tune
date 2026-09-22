@@ -16,7 +16,7 @@ This code runs inside the compositor. A leak, a stray signal, or a relayout loop
 
 ### 3. Shell-version ready
 
-Shell internals shift between versions (see the Shell 50 background-load workaround in `modRestoreThumbnailsBackground.js`). New behavior must consider all supported versions in `metadata.json`, not just the one you run.
+Shell internals shift between versions (see the Shell 50 background-load workaround in `modRestoreThumbnailsBackground.ts`). New behavior must consider all supported versions in `metadata.json`, not just the one you run.
 
 ### 4. One surface, two entry points
 
@@ -55,7 +55,7 @@ The most common defect here is wiring three of the four touchpoints and missing 
 - **Shell versions.** Test reasoning against every version in `metadata.json`, not just yours. Note version-specific workarounds inline with the version number.
 - **Monitor and workspace counts.** Thumbnail mods touch both primary (`_maxThumbnailScale`) and secondary (`SecondaryMonitorDisplay._getThumbnailsHeight`) paths, and single-workspace vs multi-workspace (`always-show-thumbnails`). Check both.
 - **Locales.** User-visible strings go through `gettext` (`_(key)`) with `locale/*.po` coverage (`ar,en,fr,ja,ko,nl,ru,sk,sv`). If you add a key or label, it needs translation entries, then `make gettext`.
-- **Docs.** User-facing behavior changes update `README.md` and `metadata.json:description`. Code-behavior notes belong in TSDoc on the mod, not in a new doc page.
+- **Docs.** User-facing behavior changes update `README.md` and `metadata.json:description`. Keep non-obvious code-behavior notes next to the relevant code.
 
 ## Dev workflow
 
@@ -70,7 +70,7 @@ The most common defect here is wiring three of the four touchpoints and missing 
   gnome-extensions enable gnome-ui-tune@itstime.tech
   ```
 - After update, Shell restart is required: X11 `Alt+F2` → `r`; Wayland logout → login.
-- Build deps: `gnome-extensions`, `glib-compile-schemas`, `msgfmt`, `jq`, plus Node/pnpm for JSDoc only (`package.json` scripts: `docs`; devDeps: `jsdoc`, `@types/bun`).
+- Build deps: `gnome-extensions`, `glib-compile-schemas`, `msgfmt`, `jq`, and Bun for TypeScript dependencies.
 - Release CI (`.github/workflows/release.yml`): push tag `v*.*.*` → container `ghcr.io/axxapy/gnome-extensions-docker` → `make dist` → attach `*.zip` via `softprops/action-gh-release`.
 
 ## Test data
@@ -90,7 +90,6 @@ There is no database and no test suite. Test in a live Shell session:
 - After schema work: `make schemas` must succeed and the key must appear in prefs and take effect.
 - After locale work: `make gettext` must succeed with no `msgfmt` errors.
 - After packaging work: `make dist` must produce an installable zip; CI owns the tag-release path.
-- After JSDoc/comment work: `make docs` must succeed.
 - **Do not run repo-wide checks.** No full-suite equivalent exists; CI only builds the zip on tags. Keep verification scoped to what you touched.
 - Do not verify with browsers or computer use unless explicitly requested.
 
@@ -100,7 +99,7 @@ There is no database and no test suite. Test in a live Shell session:
 - Conventional titles, plain language (repo history: `fix: signal error`, `chore: migrate to bun`): e.g. `fix(pip): match localized Firefox titles on Shell 50`.
 - Body: the problem in a sentence or two, then how you fixed it, including Shell versions tested and restart path used.
 - UI/overview changes need before/after screenshots. Timing/animation needs a short video.
-- Upload PR evidence to GitHub. Never commit PR-only assets, zips, `.mo` files, compiled schemas, or `docs/` output.
+- Upload PR evidence to GitHub. Never commit PR-only assets, zips, `.mo` files, or compiled schemas.
 - One concern per PR. If the description says "also", split it.
 
 ## Documentation
@@ -108,53 +107,53 @@ There is no database and no test suite. Test in a live Shell session:
 Most changes need no new doc page. Agents can read the code.
 
 - User-facing behavior (new mod, changed default, new Shell version, new setting) updates `README.md` (Changes list, supported versions pointer, Development/Build/Install as needed) and `metadata.json:description` where shown in the Extensions app.
-- Code reasoning lives in JSDoc on the module/class/method. `jsdoc.json` already includes `extension.js`, `prefs.js`, `src/` and excludes the generated titles file — keep it that way.
+- Keep code reasoning beside the implementation as short comments. Reserve comments for Shell-version differences and other behavior the types and code do not explain.
 - `locale/*.po` `msgid`s are user docs of a sort: keep `settings-mods-list` and key labels accurate (`locale/en.po` is the reference).
-- Do not enumerate fields, narrate control flow, maintain file catalogs, or append PR summaries. Types, JSDoc, schema descriptions, and code already record the implementation.
+- Do not enumerate fields, narrate control flow, maintain file catalogs, or append PR summaries. Types, schema descriptions, and code already record the implementation.
 
 ## Plans and work artifacts
 
 - Do not commit implementation plans, research notes, or agent scratch files. Keep temporary material outside the worktree.
-- Gitignored safety net (`.gitignore`): `node_modules/`, `docs/`, `schemas/gschemas.compiled`, `*.mo`, `*.zip`, plus IDE files. Generated output stays local.
+- Gitignored safety net (`.gitignore`): `node_modules/`, `dist/`, `schemas/gschemas.compiled`, `*.mo`, `*.zip`, plus IDE files. Generated output stays local.
 - A merged PR is the implementation record. Do not preserve a second checklist in the repo.
 
 ## How it works
 
-`extension.js:GnomeUiTuneExtension.enable()` loads the registry from `src/modsList.js:get()` (constructors keyed by GSettings name), connects `changed::<key>` for each, and calls `_refresh_mod`. Boolean keys enable/disable directly; the enum key (`increase-thumbnails-size`) is treated as enabled and its enum value is passed to the constructor. `disable()` disconnects and tears down every active mod.
+`extension.ts:GnomeUiTuneExtension.enable()` loads the registry from `src/modsList.ts:get()` (constructors keyed by GSettings name), connects `changed::<key>` for each, and calls `refreshMod`. Boolean keys enable/disable directly; the enum key (`increase-thumbnails-size`) is treated as enabled and its enum value is passed to the constructor. `disable()` disconnects and tears down every active mod.
 
-Each mod extends `src/mod.js:Mod` with `enable()`/`disable()`. Implementations patch Shell via `InjectionManager.overrideMethod` on `WorkspaceThumbnail` / `ThumbnailsBox` / `SecondaryMonitorDisplay` / `Workspace`, or via overview signal connections, or via per-thumbnail `BackgroundManager`. Every patch tracks what it changed so `disable()` fully restores it.
+Each mod extends `src/mod.ts:Mod` with `enable()`/`disable()`. Implementations patch Shell via `InjectionManager.overrideMethod` on `WorkspaceThumbnail` / `ThumbnailsBox` / `SecondaryMonitorDisplay` / `Workspace`, or via overview signal connections, or via per-thumbnail `BackgroundManager`. Every patch tracks what it changed so `disable()` fully restores it.
 
-`prefs.js:fillPreferencesWindow` builds one Adw row per key in `src/modsListNames.js:getNames()` order: `SwitchRow` bound via `settings.bind` for booleans, grouped `ToggleButton`s via `get_range`/`set_string` for the enum. `src/modFirefoxPipInOverview_titles.js` is generated from Mozilla `l10n-central` by `scripts/update-ff-translations.sh` and maps localized PiP window titles for the `_isOverviewWindow` override.
+`prefs.ts:fillPreferencesWindow` builds one Adw row per definition in `src/modsListNames.ts:getSettings()` order: `SwitchRow` bound via `settings.bind` for booleans, grouped `ToggleButton`s via `get_range`/`set_string` for the enum. `src/modFirefoxPipInOverview_titles.ts` is generated from Mozilla `l10n-central` by `scripts/update-ff-translations.sh` and maps localized PiP window titles for the `_isOverviewWindow` override.
 
 ## Where code lives
 
-- `extension.js` — extension entry point, settings wiring, per-mod refresh.
-- `prefs.js` — Adw preferences window, one row per mod key.
-- `src/mod.js` — abstract `Mod` base (`enable`/`disable` contract).
-- `src/modsList.js` — mod constructors keyed by GSettings name (prefs cannot use this; importing loads mods).
-- `src/modsListNames.js` — ordered key list for prefs.
-- `src/modScaleThumbnails.js` — primary `_maxThumbnailScale` + secondary `_getThumbnailsHeight` override; takes enum-derived scale factor.
-- `src/modHideSearchInput.js` — collapses/expands search entry on `showing` / `notify::search-active`.
-- `src/modRestoreThumbnailsBackground.js` — per-thumbnail `BackgroundManager` via `_init`/`_onDestroy` overrides + orphan cleanup across thumbnail boxes.
-- `src/modAlwaysShowThumbnails.js` — forces `ThumbnailsBox._updateShouldShow`.
-- `src/modFirefoxPipInOverview.js` + `src/modFirefoxPipInOverview_titles.js` (generated) — treats Firefox PiP windows as overview windows.
+- `extension.ts` — extension entry point, settings wiring, per-mod refresh.
+- `prefs.ts` — Adw preferences window, one row per mod key.
+- `src/mod.ts` — abstract `Mod` base (`enable`/`disable` contract).
+- `src/modsList.ts` — mod constructors keyed by GSettings name (prefs cannot use this; importing loads mods).
+- `src/modsListNames.ts` — ordered, discriminated setting definitions shared by the extension and prefs.
+- `src/modScaleThumbnails.ts` — primary `_maxThumbnailScale` + secondary `_getThumbnailsHeight` override; takes enum-derived scale factor.
+- `src/modHideSearchInput.ts` — collapses/expands search entry on `showing` / `notify::search-active`.
+- `src/modRestoreThumbnailsBackground.ts` — per-thumbnail `BackgroundManager` via `_init`/`_onDestroy` overrides + orphan cleanup across thumbnail boxes.
+- `src/modAlwaysShowThumbnails.ts` — forces `ThumbnailsBox._updateShouldShow`.
+- `src/modFirefoxPipInOverview.ts` + `src/modFirefoxPipInOverview_titles.ts` (generated) — treats Firefox PiP windows as overview windows.
 - `schemas/org.gnome.shell.extensions.gnome-ui-tune.gschema.xml` — 5 keys, defaults (`hide-search`, `restore-thumbnails-background`, `always-show-thumbnails`, `overview-firefox-pip` default `true`; `increase-thumbnails-size` default `'200%'`).
 - `metadata.json` — UUID, display name, `settings-schema`, supported Shell versions.
 - `locale/*.po` + `Makefile:gettext` — translations; `scripts/update-ff-translations.sh` — PiP title regeneration.
-- `Makefile`, `package.json`, `jsdoc.json` — build/docs tooling. `.github/workflows/release.yml` — tag-triggered zip release.
+- `Makefile`, `package.json`, `tsconfig.json` — build tooling. `.github/workflows/release.yml` — tag-triggered zip release.
 
 ## Taste
 
-- Complexity belongs at the Shell boundary. Registry stays dumb, mods stay small, prefs stays declarative.
+- Complexity belongs at the adapter boundary. Orchestration stays pure, UI stays dumb.
 - One key, one mod, one responsibility. If a mod needs a second override for secondary monitors or cleanup sweeps, that is the exception — comment why.
 - `disable()` mirrors `enable()` line for line. Back up what you overwrite (`bkp_MAX_THUMBNAIL_SCALE`), track connections/actors in fields or sets, and null them after teardown.
+- Inferred types over annotations. any is the enemy.
 - Prefer `InjectionManager` + original-method delegation over copying Shell logic. Prefer signal `disconnect` over leaving handlers.
-- JSDoc describes how a thing is used and moves when the code moves. Module headers (`@module`), class purpose, and non-obvious Shell-version workarounds get comments; every-line narration does not.
-- Inferred behavior over annotations where GJS allows, but keep constructor contracts explicit (e.g. scale percentage in, factor out).
+- Comments describe how a thing is used, and move when the code moves. To be used mostly to describe functions, not to annotate every line of behavior.
 - If a rule here fights the task in front of you, say so loudly and get a human sign-off before breaking it.
 
 ## Additional tips
 
 - Wayland needs logout/login to pick up changes; X11 can `Alt+F2` → `r`. Say which path you tested.
 - Shell version matrix matters more than distro matrix. When Shell 46 and Shell 50 disagree, the code must handle both or say so.
-- Security is important but should not be over-indexed for local-only prefs; correctness of cleanup matters more.
+- Security is important but should not be over-indexed.

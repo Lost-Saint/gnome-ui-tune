@@ -1,11 +1,20 @@
-import { Mod } from './mod.js';
-import { WorkspaceThumbnail } from 'resource:///org/gnome/shell/ui/workspaceThumbnail.js';
-import type { ThumbnailsBox } from 'resource:///org/gnome/shell/ui/workspaceThumbnail.js';
 import { BackgroundManager } from 'resource:///org/gnome/shell/ui/background.js';
 import { InjectionManager } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import {
+    WorkspaceThumbnail,
+    type ThumbnailsBox,
+} from 'resource:///org/gnome/shell/ui/workspaceThumbnail.js';
+import { Mod } from './mod.js';
 
-/** Remove the background manager and signal handlers from a thumbnail. */
+type RestoreState =
+    | {readonly kind: 'disabled'}
+    | {
+        readonly kind: 'enabled';
+        readonly injectionManager: InjectionManager;
+        readonly thumbnails: Set<WorkspaceThumbnail>;
+    };
+
 function cleanupThumbnailBackground(thumbnail: WorkspaceThumbnail): void {
     const bgManager = thumbnail._bgManager;
     if (!bgManager) {
@@ -26,17 +35,12 @@ function cleanupThumbnailBackground(thumbnail: WorkspaceThumbnail): void {
     bgManager.destroy();
 }
 
-/** Restores wallpaper backgrounds inside workspace thumbnails. */
 export default class RestoreThumbnailsBackgroundMod extends Mod {
-    private thumbnails?: Set<WorkspaceThumbnail>;
-    private injectionManager?: InjectionManager;
+    private state: RestoreState = {kind: 'disabled'};
 
-    /** Attach background managers to newly created workspace thumbnails. */
     override enable(): void {
         const thumbnails = new Set<WorkspaceThumbnail>();
-        this.thumbnails = thumbnails;
         const injectionManager = new InjectionManager();
-        this.injectionManager = injectionManager;
 
         // Thumbnails on main monitor
         injectionManager.overrideMethod(
@@ -51,7 +55,7 @@ export default class RestoreThumbnailsBackgroundMod extends Mod {
                     originalMethod.call(this, metaWorkspace, monitorIndex);
                     thumbnails.add(this);
                     const bgManager = new BackgroundManager({
-                        monitorIndex: monitorIndex,
+                        monitorIndex,
                         container: this._contents,
                         vignette: false,
                     });
@@ -90,39 +94,42 @@ export default class RestoreThumbnailsBackgroundMod extends Mod {
                 };
             },
         );
+
+        this.state = {kind: 'enabled', injectionManager, thumbnails};
     }
 
-    /** Clean up background managers and remove method overrides. */
     override disable(): void {
-        this.cleanupCurrentThumbnails();
+        const state = this.state;
+        if (state.kind === 'disabled') return;
+        this.state = {kind: 'disabled'};
 
-        this.injectionManager?.clear();
-        this.injectionManager = undefined;
-        this.thumbnails = undefined;
+        this.cleanupCurrentThumbnails(state.thumbnails);
+        state.injectionManager.clear();
     }
 
-    /** Remove backgrounds from all thumbnails that currently exist. */
-    private cleanupCurrentThumbnails(): void {
-        for (const thumbnail of this.thumbnails ?? []) {
+    private cleanupCurrentThumbnails(
+        thumbnails: Set<WorkspaceThumbnail>,
+    ): void {
+        for (const thumbnail of thumbnails) {
             cleanupThumbnailBackground(thumbnail);
         }
 
         const controls = Main.overview?._overview?.controls;
-        this.cleanupThumbnailsBox(controls?._thumbnailsBox);
+        this.cleanupThumbnailsBox(controls?._thumbnailsBox, thumbnails);
 
         for (const view of controls?._workspacesDisplay?._workspacesViews ??
             []) {
-            this.cleanupThumbnailsBox(view?._thumbnails);
+            this.cleanupThumbnailsBox(view?._thumbnails, thumbnails);
         }
     }
 
-    /** Remove backgrounds from every thumbnail in a thumbnails box. */
     private cleanupThumbnailsBox(
-        thumbnailsBox?: ThumbnailsBox | null,
+        thumbnailsBox: ThumbnailsBox | null | undefined,
+        trackedThumbnails: Set<WorkspaceThumbnail>,
     ): void {
         for (const thumbnail of thumbnailsBox?._thumbnails ?? []) {
             cleanupThumbnailBackground(thumbnail);
-            this.thumbnails?.delete(thumbnail);
+            trackedThumbnails.delete(thumbnail);
         }
     }
 }
