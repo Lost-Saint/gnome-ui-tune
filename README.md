@@ -1,8 +1,11 @@
-# Gnome 4x Overview UI Tune
+# Overtue
 
 [<img src="https://github.com/andyholmes/gnome-shell-extensions-badge/raw/master/get-it-on-ego.svg" width=120px>](https://extensions.gnome.org/extension/4158/gnome-40-ui-improvements/)
 
-Simple [gnome-shell](https://wiki.gnome.org/Projects/GnomeShell) (v4x) extension that tunes overview UI to make it more usable.
+Simple [gnome-shell](https://wiki.gnome.org/Projects/GnomeShell) extension that tunes the overview UI to make it more usable.
+
+The project is named Overtue. The extension UUID and settings schema keep their
+existing `gnome-ui-tune` IDs so upgrades preserve installed settings.
 
 Supported GNOME Shell versions are listed in `metadata.json`.
 

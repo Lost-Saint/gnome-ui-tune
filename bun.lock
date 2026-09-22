@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "gnome-ui-tune",
+      "name": "overtue",
       "devDependencies": {
         "@girs/gjs": "^5.4.0",
         "@girs/gnome-shell": "^48.0.4",

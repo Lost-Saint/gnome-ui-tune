@@ -1,8 +1,8 @@
-# Gnome UI Tune
+# Overtue
 
-Gnome UI Tune (`gnome-ui-tune@itstime.tech`) is a minimal GNOME Shell extension that tunes the overview UI to make it more usable. TypeScript sources compiled with `tsc` into `dist/`, GSettings for state, `InjectionManager` + signal connections for Shell patching, Adw preferences for UI.
+Overtue (`gnome-ui-tune@itstime.tech`) is a minimal GNOME Shell extension that tunes the overview UI to make it more usable. TypeScript sources compile with `tsc` into `dist/`, GSettings stores state, `InjectionManager` and signal connections patch Shell, and Adw builds the preferences UI.
 
-Fork lineage: `axxapy/gnome-ui-tune` → `Lost-Saint/gnome-ui-tune`. Supported Shell versions are listed in `metadata.json` (currently 48–50).
+Maintainer: `lost-saint.gg`. Supported Shell versions are listed in `metadata.json` (currently 48–50).
 
 ## What makes this extension special?
 
@@ -33,7 +33,7 @@ Most contributions here are one mod or one Shell-version fix. Keep the blast rad
 ## A small glossary
 
 - **you** means the agent reading this file and changing the extension.
-- **we, us, and maintainers** mean Lost-Saint and the people building this fork.
+- **we, us, and maintainers** mean lost-saint.gg and the people building this fork.
 - **user** means the person running GNOME Shell with this extension enabled.
 - **mod** means one overview modification in `src/mod*.ts`, extending `src/mod.ts` (`enable()`/`disable()`).
 - **GSettings key** means one setting in `schemas/org.gnome.shell.extensions.gnome-ui-tune.gschema.xml`. It is the shared contract between `extension.ts`, `prefs.ts`, `modsList.ts`, and `modsListNames.ts`.

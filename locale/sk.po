@@ -1,11 +1,11 @@
-# Gnome UI Tune Slovak translation.
+# Overtue Slovak translation.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # Jozef Gaal <preklady@mayday.sk>, 2024.
 #   msgid ""
 msgid ""
 msgstr ""
-"Project-Id-Version: Gnome UI Tune v1.10.0\n"
+"Project-Id-Version: Overtue v1.10.0\n"
 "POT-Creation-Date: \n"
 "PO-Revision-Date: \n"
 "Last-Translator: Jozef Gaal <preklady@mayday.sk>\n"
