@@ -12,6 +12,8 @@ jobs:
       image: ghcr.io/axxapy/gnome-extensions-docker
     steps:
       - uses: actions/checkout@v3
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
       - run: make dist
       - name: Release
         uses: softprops/action-gh-release@v1

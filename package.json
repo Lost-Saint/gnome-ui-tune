@@ -5,13 +5,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "docs": "jsdoc -c jsdoc.json"
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "jsdoc": "^4.0.4",
-    "@types/bun": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^7"
+    "@girs/gjs": "^5.4.0",
+    "@girs/gnome-shell": "^48.0.4",
+    "@types/bun": "latest",
+    "typescript": "^7.0.2"
   }
 }

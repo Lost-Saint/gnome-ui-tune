@@ -2,7 +2,7 @@
  * DO NOT EDIT MANUALLY
  * Generated via 'make update-ff-translations'
  */
-export const titles = {
+export const titles: Record<string, true> = {
 "Aslaɣ n uvidyu":true,
 "Beeld-in-Beeld":true,
 "Bideoa beste leiho batean":true,

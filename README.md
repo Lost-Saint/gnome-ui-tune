@@ -26,7 +26,8 @@ make help
 
 Useful targets:
 
-- `make docs` generates JSDoc API documentation.
+- `make build` compiles TypeScript sources into `dist/`.
+- `make typecheck` type-checks without emitting.
 - `make schemas` compiles the GSettings schema.
 - `make gettext` generates compiled translation files.
 - `make dist` builds the extension zip for extensions.gnome.org.
@@ -38,28 +39,30 @@ Build dependencies:
 - `glib-compile-schemas`
 - `msgfmt`
 - `jq`
-- Node.js and pnpm, for JSDoc only
+- Bun (installs TypeScript and `@girs` type definitions)
 
-## Documentation
+## TypeScript
 
-Install the local Node.js tooling once:
+Sources are TypeScript (`extension.ts`, `prefs.ts`, `src/*.ts`) typed with
+`@girs/gjs` and `@girs/gnome-shell`. Shell private APIs without `@girs`
+coverage are modeled minimally in `src/shellInternals.d.ts` and
+`src/workspaceThumbnail.d.ts`.
 
-```sh
-pnpm install
-```
-
-Generate API documentation with either command:
-
-```sh
-make docs
-pnpm run docs
-```
-
-The generated JSDoc site is written to `docs/`. Open it locally with:
+Install dependencies once:
 
 ```sh
-xdg-open docs/index.html
+bun install
 ```
+
+Compile with either command:
+
+```sh
+make build
+bun run build
+```
+
+`tsc` emits plain GJS JavaScript into `dist/`, preserving `gi://`,
+`resource:///`, and relative `.js` import specifiers.
 
 ## Build
 
@@ -69,14 +72,16 @@ Create a distributable extension zip:
 make dist
 ```
 
-This compiles schemas, builds translation files, and runs `gnome-extensions pack`.
+This type-checks and compiles TypeScript into `dist/`, stages `metadata.json`,
+`LICENSE`, schemas, and translations there, and runs `gnome-extensions pack`
+on it.
 The output is a zip file named after the extension UUID, for example:
 
 ```sh
 gnome-ui-tune@itstime.tech.shell-extension.zip
 ```
 
-Generated files such as `docs/`, compiled schemas, `.mo` files, and zip files are ignored by git.
+Generated files such as `dist/`, compiled schemas, `.mo` files, and zip files are ignored by git.
 
 ## Install
 

@@ -3,7 +3,7 @@
 set -e
 
 DIR=$(cd $(dirname "$0")/../ && pwd)
-TARGET_FILE="$DIR/src/modFirefoxPipInOverview_titles.js"
+TARGET_FILE="$DIR/src/modFirefoxPipInOverview_titles.ts"
 
 LANGS=($(curl -s https://hg.mozilla.org/l10n-central/ | grep -Eo 'href="/l10n-central/[a-zA-Z-]+/"' | cut -d'"' -f2))
 
@@ -17,6 +17,6 @@ done
 
 STRINGS=$(echo -e $STRINGS | sort | uniq | grep -v '"":true,')
 echo -e "/*\n * DO NOT EDIT MANUALLY\n * Generated via 'make update-ff-translations'\n */" > "$TARGET_FILE"
-echo -e "export const titles = {${STRINGS::-1}\n}\n" >> "$TARGET_FILE"
+echo -e "export const titles: Record<string, true> = {${STRINGS::-1}\n}\n" >> "$TARGET_FILE"
 
 echo Done

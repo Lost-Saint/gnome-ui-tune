@@ -1,8 +1,8 @@
 # Gnome UI Tune
 
-Gnome UI Tune (`gnome-ui-tune@itstime.tech`) is a minimal GNOME Shell extension that tunes the overview UI to make it more usable. Plain GJS ES modules, GSettings for state, `InjectionManager` + signal connections for Shell patching, Adw preferences for UI.
+Gnome UI Tune (`gnome-ui-tune@itstime.tech`) is a minimal GNOME Shell extension that tunes the overview UI to make it more usable. TypeScript sources compiled with `tsc` into `dist/`, GSettings for state, `InjectionManager` + signal connections for Shell patching, Adw preferences for UI.
 
-Fork lineage: `axxapy/gnome-ui-tune` → `Lost-Saint/gnome-ui-tune`. Supported Shell versions are listed in `metadata.json` (currently 46–50).
+Fork lineage: `axxapy/gnome-ui-tune` → `Lost-Saint/gnome-ui-tune`. Supported Shell versions are listed in `metadata.json` (currently 48–50).
 
 ## What makes this extension special?
 
@@ -12,7 +12,7 @@ Fork-friendly by design. Small surface, readable mods, upstream lineage kept vis
 
 ### 2. Performance without compromise
 
-This code runs inside the compositor. A leak, a stray signal, or a relayout loop is a dropped frame the user feels. Patches in `src/mod*.js` must be narrow, restore everything in `disable()`, and avoid continuous repainting. The only animations are the short search-field ease in `modHideSearchInput.js` (10ms/100ms).
+This code runs inside the compositor. A leak, a stray signal, or a relayout loop is a dropped frame the user feels. Patches in `src/mod*.ts` must be narrow, restore everything in `disable()`, and avoid continuous repainting. The only animations are the short search-field ease in `modHideSearchInput.ts` (10ms/100ms).
 
 ### 3. Shell-version ready
 
@@ -20,7 +20,7 @@ Shell internals shift between versions (see the Shell 50 background-load workaro
 
 ### 4. One surface, two entry points
 
-There is one product surface — the overview — reached through two entry points that must stay in sync: `extension.js` (applies mods) and `prefs.js` (Adw switches/toggles bound to the same GSettings keys).
+There is one product surface — the overview — reached through two entry points that must stay in sync: `extension.ts` (applies mods) and `prefs.ts` (Adw switches/toggles bound to the same GSettings keys).
 
 ## A note from Lost
 
@@ -35,35 +35,35 @@ Most contributions here are one mod or one Shell-version fix. Keep the blast rad
 - **you** means the agent reading this file and changing the extension.
 - **we, us, and maintainers** mean Lost-Saint and the people building this fork.
 - **user** means the person running GNOME Shell with this extension enabled.
-- **mod** means one overview modification in `src/mod*.js`, extending `src/mod.js` (`enable()`/`disable()`).
-- **GSettings key** means one setting in `schemas/org.gnome.shell.extensions.gnome-ui-tune.gschema.xml`. It is the shared contract between `extension.js`, `prefs.js`, `modsList.js`, and `modsListNames.js`.
-- **prefs** means the Extensions-app UI built in `prefs.js` (Adw `PreferencesPage`/`SwitchRow`/toggle buttons).
+- **mod** means one overview modification in `src/mod*.ts`, extending `src/mod.ts` (`enable()`/`disable()`).
+- **GSettings key** means one setting in `schemas/org.gnome.shell.extensions.gnome-ui-tune.gschema.xml`. It is the shared contract between `extension.ts`, `prefs.ts`, `modsList.ts`, and `modsListNames.ts`.
+- **prefs** means the Extensions-app UI built in `prefs.ts` (Adw `PreferencesPage`/`SwitchRow`/toggle buttons).
 - **Shell** means the running GNOME Shell the code patches via `resource:///` imports. Never bundled, never vendored.
 
 ## The three ways to hurt yourself
 
-1. **Leaking on disable.** Every `InjectionManager.overrideMethod`, `connect`, `BackgroundManager`, and mutated Shell field in `enable()` must be undone in `disable()`. Follow the existing pattern: `injectionManager?.clear()`, `disconnect(connectId)`, `bgManager.destroy()`, restore backed-up values (see `modScaleThumbnails.js`, `modHideSearchInput.js`, `modRestoreThumbnailsBackground.js`). An extension that only works until toggled is broken.
-2. **Assuming Shell internals are stable.** Private paths like `main.overview._overview._controls._thumbnailsBox` and prototypes like `WorkspaceThumbnail`, `ThumbnailsBox`, `SecondaryMonitorDisplay`, `Workspace` change across versions. Guard by supported version, keep overrides minimal, and call the original method unless there is a reason not to.
-3. **Editing generated files.** Never hand-edit `docs/`, `schemas/gschemas.compiled`, `locale/*/LC_MESSAGES/*.mo`, `*.zip`, or `src/modFirefoxPipInOverview_titles.js`. The titles file header says `DO NOT EDIT MANUALLY` — regenerate with `make update-ff-translations`. All of these except the titles source are gitignored.
+1. **Leaking on disable.** Every `InjectionManager.overrideMethod`, `connect`, `BackgroundManager`, and mutated Shell field in `enable()` must be undone in `disable()`. Follow the existing pattern: `injectionManager?.clear()`, `disconnect(connectId)`, `bgManager.destroy()`, restore backed-up values (see `modScaleThumbnails.ts`, `modHideSearchInput.ts`, `modRestoreThumbnailsBackground.ts`). An extension that only works until toggled is broken.
+2. **Assuming Shell internals are stable.** Private paths like `main.overview._overview._controls._thumbnailsBox` and prototypes like `WorkspaceThumbnail`, `ThumbnailsBox`, `SecondaryMonitorDisplay`, `Workspace` change across versions. Guard by supported version, keep overrides minimal, and call the original method unless there is a reason not to. If the API you touch has no `@girs` coverage, extend `src/shellInternals.d.ts` / `src/workspaceThumbnail.d.ts` narrowly instead of casting at the call site.
+3. **Editing generated files.** Never hand-edit `dist/`, `schemas/gschemas.compiled`, `locale/*/LC_MESSAGES/*.mo`, `*.zip`, or `src/modFirefoxPipInOverview_titles.ts`. The titles file header says `DO NOT EDIT MANUALLY` — regenerate with `make update-ff-translations`. All of these except the titles source are gitignored.
 
 ## Hit every surface
 
 The most common defect here is wiring three of the four touchpoints and missing the last. Before calling mod work done, walk this list:
 
-- **Schema + registry + prefs + extension.** A new or renamed key needs: `schemas/*.gschema.xml`, `src/modsList.js` constructor entry, `src/modsListNames.js` ordering entry, and correct handling in `extension.js:_refresh_mod` (boolean vs enum) and `prefs.js:fillPreferencesWindow` (`SwitchRow` vs toggle-button group). Miss one and the mod silently never loads or never shows.
-- **Reverse states.** If you added a way in, add the way out. Enable needs disable. `show_search` needs `hide_search`. Background attach needs `cleanupThumbnailBackground`. A one-way door is a bug.
+- **Schema + registry + prefs + extension.** A new or renamed key needs: `schemas/*.gschema.xml`, `src/modsList.ts` constructor entry, `src/modsListNames.ts` ordering entry, and correct handling in `extension.ts:refreshMod` (boolean vs enum) and `prefs.ts:fillPreferencesWindow` (`SwitchRow` vs toggle-button group). Miss one and the mod silently never loads or never shows.
+- **Reverse states.** If you added a way in, add the way out. Enable needs disable. `showSearch` needs `hideSearch`. Background attach needs `cleanupThumbnailBackground`. A one-way door is a bug.
 - **Shell versions.** Test reasoning against every version in `metadata.json`, not just yours. Note version-specific workarounds inline with the version number.
 - **Monitor and workspace counts.** Thumbnail mods touch both primary (`_maxThumbnailScale`) and secondary (`SecondaryMonitorDisplay._getThumbnailsHeight`) paths, and single-workspace vs multi-workspace (`always-show-thumbnails`). Check both.
 - **Locales.** User-visible strings go through `gettext` (`_(key)`) with `locale/*.po` coverage (`ar,en,fr,ja,ko,nl,ru,sk,sv`). If you add a key or label, it needs translation entries, then `make gettext`.
-- **Docs.** User-facing behavior changes update `README.md` and `metadata.json:description`. Code-behavior notes belong in JSDoc on the mod, not in a new doc page.
+- **Docs.** User-facing behavior changes update `README.md` and `metadata.json:description`. Code-behavior notes belong in TSDoc on the mod, not in a new doc page.
 
 ## Dev workflow
 
-- `make help` lists targets. Useful targets: `make schemas`, `make gettext`, `make docs`, `make dist`, `make update-ff-translations`.
+- `make help` lists targets. Useful targets: `make build`, `make typecheck`, `make schemas`, `make gettext`, `make dist`, `make update-ff-translations`.
+- `make build` / `bun run build` compiles `extension.ts`, `prefs.ts`, `src/*.ts` with `tsc` into `dist/`, preserving `gi://`, `resource:///`, and relative `.js` specifiers for GJS. Types come from `@girs/gjs` + `@girs/gnome-shell` (see `ambient.d.ts`); Shell privates without `@girs` coverage live in `src/shellInternals.d.ts` / `src/workspaceThumbnail.d.ts`.
 - `make schemas` compiles GSettings: `glib-compile-schemas ./schemas/`. Run after schema edits.
 - `make gettext` builds `.mo` files from `locale/*.po` via `msgfmt`. Run after translation edits.
-- `make docs` / `pnpm run docs` generates the JSDoc site into `docs/` per `jsdoc.json` (sources: `extension.js`, `prefs.js`, `src/`, excluding the generated titles file). `docs/` is gitignored output — open with `xdg-open docs/index.html`, never commit it.
-- `make dist` builds the distributable: schemas + gettext + `gnome-extensions pack --force --podir=locale --extra-source src --extra-source LICENSE .`. Output is `gnome-ui-tune@itstime.tech.shell-extension.zip` (gitignored).
+- `make dist` stages the compiled output plus `metadata.json`, `LICENSE`, schemas, and `locale/` into `dist/` and packs it: `gnome-extensions pack --force --podir=locale --extra-source src --extra-source LICENSE dist --out-dir .`. Output is `gnome-ui-tune@itstime.tech.shell-extension.zip` (gitignored). Never hand-edit `dist/`; it is rebuilt from sources.
 - Install / enable the built zip:
   ```sh
   gnome-extensions install --force gnome-ui-tune@itstime.tech.shell-extension.zip
