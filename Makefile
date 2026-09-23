@@ -1,4 +1,4 @@
-.PHONY: build typecheck gettext dist help schemas update-ff-translations clean
+.PHONY: build typecheck gettext dist lint help schemas update-ff-translations clean
 .DEFAULT_GOAL=help
 uuid:=$(shell jq -r .uuid metadata.json)
 TSC:=./node_modules/.bin/tsc
@@ -28,6 +28,9 @@ dist: build schemas gettext ## Prepare zip file for extensions.gnome.org
 	cp -r schemas locale dist/
 	glib-compile-schemas dist/schemas
 	gnome-extensions pack --force --podir=locale --extra-source src --extra-source LICENSE dist --out-dir .
+
+lint: dist ## Analyze the packaged extension with shexli
+	uv run --locked shexli $(uuid).shell-extension.zip
 
 clean: ## Remove build output and the packed zip
 	rm -rf dist $(uuid).shell-extension.zip

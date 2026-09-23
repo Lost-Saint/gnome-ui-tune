@@ -1,4 +1,5 @@
 import Clutter from 'gi://Clutter';
+import St from 'gi://St';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { Mod } from './mod.js';
 
@@ -7,16 +8,33 @@ export default class HideSearchInputMod extends Mod {
     private searchActiveId = 0;
 
     private showSearch(): void {
-        Main.overview.searchEntry?.get_parent()?.ease({
-            height: Main.overview.searchEntry.height,
+        const searchEntry = Main.overview.searchEntry;
+        const container = searchEntry?.get_parent();
+        if (!searchEntry || !container) return;
+        const verticalPadding =
+            container instanceof St.Widget
+                ? container.get_theme_node().get_vertical_padding()
+                : null;
+        if (verticalPadding === null) return;
+
+        container.ease({
+            height: searchEntry.height + verticalPadding,
             mode: Clutter.AnimationMode.EASE,
             duration: 10,
         });
     }
 
     private hideSearch(): void {
-        Main.overview.searchEntry?.get_parent()?.ease({
-            height: 0,
+        const container = Main.overview.searchEntry?.get_parent();
+        if (!container) return;
+        const verticalPadding =
+            container instanceof St.Widget
+                ? container.get_theme_node().get_vertical_padding()
+                : null;
+        if (verticalPadding === null) return;
+
+        container.ease({
+            height: verticalPadding,
             mode: Clutter.AnimationMode.EASE,
             duration: 100,
         });
@@ -24,26 +42,15 @@ export default class HideSearchInputMod extends Mod {
 
     override enable(): void {
         this.overviewShowingId = Main.overview.connect('showing', () => {
-            const connectId = this.overviewShowingId;
-            this.overviewShowingId = 0;
-
-            if (connectId) {
-                Main.overview.disconnect(connectId);
-            }
-
             this.hideSearch();
         });
 
         this.searchActiveId = Main.overview.searchController.connect(
             'notify::search-active',
-            () => {
-                if (Main.overview.searchController.searchActive) {
-                    this.showSearch();
-                } else {
-                    this.hideSearch();
-                }
-            },
+            () => this.hideSearch(),
         );
+
+        this.hideSearch();
     }
 
     override disable(): void {

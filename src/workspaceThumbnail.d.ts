@@ -10,6 +10,7 @@ type ShellBackgroundManager = import(
 declare module 'resource:///org/gnome/shell/ui/workspaceThumbnail.js' {
     interface WorkspaceThumbnail {
         _contents: ClutterActor;
+        monitorIndex: number;
         // Attached by modRestoreThumbnailsBackground while the mod is enabled.
         _bgManager?: ShellBackgroundManager | null;
         _bgManagerLoadedId?: number;

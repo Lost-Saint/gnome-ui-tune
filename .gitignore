@@ -1,6 +1,7 @@
 *.iml
 .idea
 node_modules/
+.venv/
 dist/
 schemas/gschemas.compiled
 *.mo

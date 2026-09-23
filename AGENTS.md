@@ -59,7 +59,7 @@ The most common defect here is wiring three of the four touchpoints and missing 
 
 ## Dev workflow
 
-- `make help` lists targets. Useful targets: `make build`, `make typecheck`, `make schemas`, `make gettext`, `make dist`, `make update-ff-translations`.
+- `make help` lists targets. Useful targets: `make build`, `make typecheck`, `make schemas`, `make gettext`, `make dist`, `make lint`, `make update-ff-translations`.
 - `make build` / `bun run build` compiles `extension.ts`, `prefs.ts`, `src/*.ts` with `tsc` into `dist/`, preserving `gi://`, `resource:///`, and relative `.js` specifiers for GJS. Types come from `@girs/gjs` + `@girs/gnome-shell` (see `ambient.d.ts`); Shell privates without `@girs` coverage live in `src/shellInternals.d.ts` / `src/workspaceThumbnail.d.ts`.
 - `make schemas` compiles GSettings: `glib-compile-schemas ./schemas/`. Run after schema edits.
 - `make gettext` builds `.mo` files from `locale/*.po` via `msgfmt`. Run after translation edits.
@@ -70,7 +70,7 @@ The most common defect here is wiring three of the four touchpoints and missing 
   gnome-extensions enable overtue@lost-saint.gg
   ```
 - After update, Shell restart is required: X11 `Alt+F2` → `r`; Wayland logout → login.
-- Build deps: `gnome-extensions`, `glib-compile-schemas`, `msgfmt`, `jq`, and Bun for TypeScript dependencies.
+- Build deps: `gnome-extensions`, `glib-compile-schemas`, `msgfmt`, `jq`, Bun for TypeScript dependencies, and uv for Shexli.
 - Release CI (`.github/workflows/release.yml`): push tag `v*.*.*` → container `ghcr.io/axxapy/gnome-extensions-docker` → `make dist` → attach `*.zip` via `softprops/action-gh-release`.
 
 ## Test data
@@ -140,7 +140,7 @@ Each mod extends `src/mod.ts:Mod` with `enable()`/`disable()`. Implementations p
 - `schemas/org.gnome.shell.extensions.overtue.gschema.xml` — 5 keys, defaults (`hide-search`, `restore-thumbnails-background`, `always-show-thumbnails`, `overview-firefox-pip` default `true`; `increase-thumbnails-size` default `'200%'`).
 - `metadata.json` — UUID, display name, `settings-schema`, supported Shell versions.
 - `locale/*.po` + `Makefile:gettext` — translations; `scripts/update-ff-translations.sh` — PiP title regeneration.
-- `Makefile`, `package.json`, `tsconfig.json` — build tooling. `.github/workflows/release.yml` — tag-triggered zip release.
+- `Makefile`, `package.json`, `pyproject.toml`, `uv.lock`, `tsconfig.json` — build tooling. `.github/workflows/release.yml` — tag-triggered zip release.
 
 ## Taste
 

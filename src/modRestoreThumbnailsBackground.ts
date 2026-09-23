@@ -35,6 +35,30 @@ function cleanupThumbnailBackground(thumbnail: WorkspaceThumbnail): void {
     bgManager.destroy();
 }
 
+function restoreThumbnailBackground(thumbnail: WorkspaceThumbnail): void {
+    if (thumbnail._bgManager) return;
+
+    const bgManager = new BackgroundManager({
+        monitorIndex: thumbnail.monitorIndex,
+        container: thumbnail._contents,
+        vignette: false,
+    });
+    thumbnail._bgManager = bgManager;
+
+    // Shell 50: when the wallpaper image finishes loading after the
+    // thumbnail is built (cold cache on cold boot, or after resume
+    // invalidates the cache), the Meta.BackgroundActor's preferred
+    // size update no longer always propagates to its parent's
+    // allocation, leaving the thumbnail blank until something else
+    // (e.g. switching workspaces) forces a relayout. Force one
+    // ourselves on every load and on every actor swap.
+    const requeue = (): undefined => {
+        thumbnail._bgManager?.backgroundActor?.queue_relayout();
+    };
+    thumbnail._bgManagerLoadedId = bgManager.connect('loaded', requeue);
+    thumbnail._bgManagerChangedId = bgManager.connect('changed', requeue);
+}
+
 export default class RestoreThumbnailsBackgroundMod extends Mod {
     private state: RestoreState = {kind: 'disabled'};
 
@@ -54,31 +78,7 @@ export default class RestoreThumbnailsBackgroundMod extends Mod {
                 ): void {
                     originalMethod.call(this, metaWorkspace, monitorIndex);
                     thumbnails.add(this);
-                    const bgManager = new BackgroundManager({
-                        monitorIndex,
-                        container: this._contents,
-                        vignette: false,
-                    });
-                    this._bgManager = bgManager;
-
-                    // Shell 50: when the wallpaper image finishes loading after the
-                    // thumbnail is built (cold cache on cold boot, or after resume
-                    // invalidates the cache), the Meta.BackgroundActor's preferred
-                    // size update no longer always propagates to its parent's
-                    // allocation, leaving the thumbnail blank until something else
-                    // (e.g. switching workspaces) forces a relayout. Force one
-                    // ourselves on every load and on every actor swap.
-                    const requeue = (): undefined => {
-                        this._bgManager?.backgroundActor?.queue_relayout();
-                    };
-                    this._bgManagerLoadedId = bgManager.connect(
-                        'loaded',
-                        requeue,
-                    );
-                    this._bgManagerChangedId = bgManager.connect(
-                        'changed',
-                        requeue,
-                    );
+                    restoreThumbnailBackground(this);
                 };
             },
         );
@@ -96,6 +96,7 @@ export default class RestoreThumbnailsBackgroundMod extends Mod {
         );
 
         this.state = {kind: 'enabled', injectionManager, thumbnails};
+        this.restoreCurrentThumbnails(thumbnails);
     }
 
     override disable(): void {
@@ -120,6 +121,28 @@ export default class RestoreThumbnailsBackgroundMod extends Mod {
         for (const view of controls?._workspacesDisplay?._workspacesViews ??
             []) {
             this.cleanupThumbnailsBox(view?._thumbnails, thumbnails);
+        }
+    }
+
+    private restoreCurrentThumbnails(
+        thumbnails: Set<WorkspaceThumbnail>,
+    ): void {
+        const controls = Main.overview?._overview?.controls;
+        this.restoreThumbnailsBox(controls?._thumbnailsBox, thumbnails);
+
+        for (const view of controls?._workspacesDisplay?._workspacesViews ??
+            []) {
+            this.restoreThumbnailsBox(view?._thumbnails, thumbnails);
+        }
+    }
+
+    private restoreThumbnailsBox(
+        thumbnailsBox: ThumbnailsBox | null | undefined,
+        trackedThumbnails: Set<WorkspaceThumbnail>,
+    ): void {
+        for (const thumbnail of thumbnailsBox?._thumbnails ?? []) {
+            restoreThumbnailBackground(thumbnail);
+            trackedThumbnails.add(thumbnail);
         }
     }
 

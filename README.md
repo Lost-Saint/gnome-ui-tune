@@ -34,6 +34,7 @@ Useful targets:
 - `make schemas` compiles the GSettings schema.
 - `make gettext` generates compiled translation files.
 - `make dist` builds the extension zip for extensions.gnome.org.
+- `make lint` runs Shexli against the packaged extension.
 - `make update-ff-translations` updates Firefox PIP title translations.
 
 Build dependencies:
@@ -43,6 +44,7 @@ Build dependencies:
 - `msgfmt`
 - `jq`
 - Bun (installs TypeScript and `@girs` type definitions)
+- uv (installs Shexli for extension analysis)
 
 ## TypeScript
 
@@ -55,6 +57,7 @@ Install dependencies once:
 
 ```sh
 bun install
+uv sync
 ```
 
 Compile with either command:
@@ -66,6 +69,10 @@ bun run build
 
 `tsc` emits plain GJS JavaScript into `dist/`, preserving `gi://`,
 `resource:///`, and relative `.js` import specifiers.
+
+Shexli is managed by uv in `pyproject.toml` and `uv.lock`. Run `make lint`
+after `make dist` to check the packaged extension against GNOME Shell extension
+review rules.
 
 ## Build
 
